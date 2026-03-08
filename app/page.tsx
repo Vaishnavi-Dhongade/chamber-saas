@@ -114,24 +114,35 @@ export default function Home() {
             >
               Members
             </Link>
+
             <Link 
               href="/dashboard/events"
               className="bg-gray-700 text-white px-5 py-3 rounded-md hover:bg-gray-600 transition text-center text-sm font-medium"
             >
               Events
             </Link>
+
             <Link 
               href="/dashboard/timer"
               className="bg-gray-700 text-white px-5 py-3 rounded-md hover:bg-gray-600 transition text-center text-sm font-medium"
             >
               Timer Control
             </Link>
-            <Link 
+
+            {/* <Link 
               href="/timer/display"
               className="bbg-gray-900 text-white px-5 py-3 rounded-md hover:bg-gray-800 transition text-center text-sm font-medium"
             >
               Timer Display
+            </Link> */}
+
+            <Link 
+              href="/timer/display"
+              className="bg-gray-900 text-white px-5 py-3 rounded-md hover:bg-gray-800 transition text-center text-sm font-medium"
+            >
+              Timer Display
             </Link>
+
           </div>
         </div>
       </div>
