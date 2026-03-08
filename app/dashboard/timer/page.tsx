@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
 export default function TimerControl() {
-  const [duration, setDuration] = useState(45) // seconds
+  const [duration, setDuration] = useState(45)
   const [timeLeft, setTimeLeft] = useState(45)
   const [isRunning, setIsRunning] = useState(false)
   const [sessionId] = useState(() => Date.now().toString())
@@ -53,77 +53,93 @@ export default function TimerControl() {
 
   const getColor = () => {
     const percentage = (timeLeft / duration) * 100
-    if (percentage > 50) return 'green'
-    if (percentage > 20) return 'yellow'
-    return 'red'
+    if (percentage > 50) return 'text-gray-700'
+    if (percentage > 20) return 'text-gray-600'
+    return 'text-gray-900'
   }
 
   const displayUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/timer/display?duration=${duration}&session=${sessionId}`
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Navigation */}
-      <nav className="bg-white shadow-md">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-purple-600">
-            ⏱️ Pitch Timer Control
-          </h1>
-          <div className="flex gap-4">
-            <Link href="/dashboard" className="text-gray-600 hover:text-purple-600">
-              Dashboard
-            </Link>
-            <Link href="/dashboard/timer" className="text-purple-600 font-semibold">
-              Timer
-            </Link>
+    <div className="min-h-screen bg-gray-50">
+      {/* Top Navigation */}
+      <nav className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+              <p className="text-sm text-gray-500">Pitch Timer Control</p>
+            </div>
+            <div className="flex gap-4">
+              <Link href="/" className="text-sm text-gray-700 hover:text-gray-900 font-medium">
+                Home
+              </Link>
+              <Link href="/dashboard" className="text-sm text-gray-700 hover:text-gray-900 font-medium">
+                Members
+              </Link>
+              <Link href="/dashboard/events" className="text-sm text-gray-700 hover:text-gray-900 font-medium">
+                Events
+              </Link>
+              <Link href="/dashboard/timer" className="text-sm text-gray-900 font-semibold">
+                Timer
+              </Link>
+            </div>
           </div>
         </div>
       </nav>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-6 py-8">
         {/* Display URL Instructions */}
-        <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 mb-8">
-          <h2 className="text-lg font-bold text-blue-800 mb-2">
-            📺 Display on TV/Projector
-          </h2>
-          <p className="text-blue-700 mb-3">
-            Open this URL on the screen everyone can see:
-          </p>
-          <div className="bg-white p-3 rounded border border-blue-300 font-mono text-sm break-all">
-            {displayUrl}
+        <div className="bg-white border border-gray-300 rounded-lg p-6 mb-8">
+          <div className="flex items-start">
+            <svg className="w-5 h-5 text-gray-600 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div className="flex-1">
+              <h2 className="text-lg font-bold text-gray-900 mb-2">
+                Display on TV/Projector
+              </h2>
+              <p className="text-sm text-gray-600 mb-3">
+                Open this URL on the screen everyone can see:
+              </p>
+              <div className="bg-gray-50 border border-gray-200 rounded px-3 py-2 font-mono text-xs text-gray-700 break-all mb-3">
+                {displayUrl}
+              </div>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(displayUrl)
+                  alert('URL copied to clipboard!')
+                }}
+                className="bg-gray-900 text-white px-4 py-2 rounded-md hover:bg-gray-800 transition text-sm font-medium"
+              >
+                Copy URL
+              </button>
+              <p className="text-xs text-gray-500 mt-3">
+                Or open a new tab and navigate to: <span className="font-semibold">/timer/display</span>
+              </p>
+            </div>
           </div>
-          <button
-            onClick={() => {
-              navigator.clipboard.writeText(displayUrl)
-              alert('URL copied to clipboard!')
-            }}
-            className="mt-3 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          >
-            📋 Copy URL
-          </button>
-          <p className="text-sm text-blue-600 mt-3">
-            Or just open a new tab and go to: <strong>/timer/display</strong>
-          </p>
         </div>
 
-        {/* Duration Presets */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4">⚙️ Set Duration</h2>
-          <div className="grid grid-cols-4 gap-3">
+        {/* Duration Selection */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-4">Set Duration</h2>
+          <div className="grid grid-cols-4 gap-3 mb-4">
             {[30, 45, 60, 90].map(seconds => (
               <button
                 key={seconds}
                 onClick={() => handleDurationChange(seconds)}
-                className={`py-3 rounded-lg font-semibold transition ${
+                className={`py-3 rounded-md font-semibold transition text-sm ${
                   duration === seconds
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-gray-900 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
                 }`}
               >
                 {seconds}s
               </button>
             ))}
           </div>
-          <div className="mt-4">
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Custom Duration (seconds)
             </label>
@@ -133,70 +149,64 @@ export default function TimerControl() {
               max="300"
               value={duration}
               onChange={(e) => handleDurationChange(parseInt(e.target.value) || 45)}
-              className="border rounded px-4 py-2 w-full"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
             />
           </div>
         </div>
 
-        {/* Timer Display (Preview) */}
-        <div className="bg-white rounded-lg shadow-md p-8 mb-6">
+        {/* Timer Preview */}
+        <div className="bg-white rounded-lg border border-gray-200 p-8 mb-6">
           <div className="text-center">
-            <div className="text-gray-500 text-sm mb-2">PREVIEW</div>
-            <div 
-              className={`text-8xl font-bold mb-4 transition-colors ${
-                getColor() === 'green' ? 'text-green-600' :
-                getColor() === 'yellow' ? 'text-yellow-500' :
-                'text-red-600'
-              }`}
-            >
-              0:{timeLeft.toString().padStart(2, '0')}
+            <div className="text-xs uppercase tracking-wide text-gray-500 mb-2">Preview</div>
+            <div className={`text-7xl font-bold mb-4 transition-colors ${getColor()}`}>
+              {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
             </div>
-            <div className="text-gray-600 text-lg">
-              {isRunning ? '▶️ Running' : timeLeft === 0 ? '⏹️ Finished' : '⏸️ Ready'}
+            <div className="text-sm text-gray-600">
+              {isRunning ? '▶ Running' : timeLeft === 0 ? '⏹ Finished' : '⏸ Ready'}
             </div>
           </div>
         </div>
 
         {/* Control Buttons */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-4 mb-8">
           <button
             onClick={handleStart}
             disabled={isRunning}
-            className={`py-6 rounded-lg text-xl font-bold transition ${
+            className={`py-5 rounded-md text-base font-bold transition ${
               isRunning
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-green-600 text-white hover:bg-green-700'
+                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                : 'bg-gray-900 text-white hover:bg-gray-800'
             }`}
           >
-            ▶️ START
+            ▶ START
           </button>
           <button
             onClick={handlePause}
             disabled={!isRunning}
-            className={`py-6 rounded-lg text-xl font-bold transition ${
+            className={`py-5 rounded-md text-base font-bold transition ${
               !isRunning
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-yellow-600 text-white hover:bg-yellow-700'
+                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                : 'bg-gray-700 text-white hover:bg-gray-600'
             }`}
           >
-            ⏸️ PAUSE
+            ⏸ PAUSE
           </button>
           <button
             onClick={handleReset}
-            className="py-6 rounded-lg text-xl font-bold bg-red-600 text-white hover:bg-red-700 transition"
+            className="py-5 rounded-md text-base font-bold bg-gray-600 text-white hover:bg-gray-700 transition"
           >
             🔄 RESET
           </button>
         </div>
 
         {/* Instructions */}
-        <div className="mt-8 bg-gray-50 rounded-lg p-6">
-          <h3 className="font-bold mb-3">📖 How to Use:</h3>
-          <ol className="list-decimal list-inside space-y-2 text-gray-700">
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h3 className="font-bold text-gray-900 mb-3">How to Use</h3>
+          <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
             <li>Choose pitch duration (default: 45 seconds)</li>
             <li>Open the Display URL on a TV or projector</li>
             <li>Press START when the speaker begins</li>
-            <li>Timer changes color: Green → Yellow → Red</li>
+            <li>Timer changes color as time runs out</li>
             <li>Press RESET for the next speaker</li>
           </ol>
         </div>

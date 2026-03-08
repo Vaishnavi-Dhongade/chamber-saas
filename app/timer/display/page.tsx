@@ -33,9 +33,16 @@ function TimerDisplayContent() {
 
   const getBackgroundColor = () => {
     const percentage = (timeLeft / duration) * 100
-    if (percentage > 50) return 'bg-green-500'
-    if (percentage > 20) return 'bg-yellow-400'
-    return 'bg-red-500'
+    if (percentage > 50) return 'bg-gray-100'
+    if (percentage > 20) return 'bg-gray-200'
+    return 'bg-gray-300'
+  }
+
+  const getTextColor = () => {
+    const percentage = (timeLeft / duration) * 100
+    if (percentage > 50) return 'text-gray-900'
+    if (percentage > 20) return 'text-gray-800'
+    return 'text-gray-900'
   }
 
   const getStatusText = () => {
@@ -46,45 +53,49 @@ function TimerDisplayContent() {
 
   return (
     <div className={`min-h-screen flex flex-col items-center justify-center transition-colors duration-500 ${getBackgroundColor()}`}>
-      <div className="text-white text-center">
-        <div className="text-9xl md:text-[20rem] font-black mb-8 drop-shadow-2xl">
+      <div className="text-center">
+        <div className={`text-9xl md:text-[20rem] font-black mb-8 drop-shadow-lg transition-colors ${getTextColor()}`}>
           {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
         </div>
         
-        <div className="text-4xl md:text-6xl font-bold uppercase tracking-widest drop-shadow-lg">
+        <div className={`text-4xl md:text-6xl font-bold uppercase tracking-widest ${getTextColor()}`}>
           {getStatusText()}
         </div>
       </div>
 
-      <div className="fixed bottom-8 left-8 bg-black bg-opacity-50 text-white p-4 rounded-lg text-sm max-w-md">
-        <p className="font-bold mb-2">🎮 Test Controls</p>
-        <p className="text-xs mb-3">Duration: {duration} seconds</p>
+      {/* Test Controls */}
+      <div className="fixed bottom-8 left-8 bg-white border-2 border-gray-300 rounded-lg p-4 shadow-lg max-w-md">
+        <p className="font-bold text-gray-900 mb-2 text-sm">Test Controls</p>
+        <p className="text-xs text-gray-600 mb-3">Duration: {duration} seconds</p>
         <div className="space-x-2">
           <button
             onClick={() => {
               setTimeLeft(duration)
               setIsRunning(true)
             }}
-            className="bg-green-600 px-4 py-2 rounded hover:bg-green-700 transition"
+            className="bg-gray-900 text-white px-4 py-2 rounded-md hover:bg-gray-800 transition text-sm font-medium"
           >
-            ▶️ Start
+            ▶ Start
           </button>
           <button
             onClick={() => setIsRunning(false)}
-            className="bg-yellow-600 px-4 py-2 rounded hover:bg-yellow-700 transition"
+            className="bg-gray-700 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition text-sm font-medium"
           >
-            ⏸️ Pause
+            ⏸ Pause
           </button>
           <button
             onClick={() => {
               setIsRunning(false)
               setTimeLeft(duration)
             }}
-            className="bg-red-600 px-4 py-2 rounded hover:bg-red-700 transition"
+            className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition text-sm font-medium"
           >
             🔄 Reset
           </button>
         </div>
+        <p className="text-xs text-gray-500 mt-3">
+          Note: In production, this syncs with control screen automatically
+        </p>
       </div>
     </div>
   )
@@ -93,8 +104,8 @@ function TimerDisplayContent() {
 export default function TimerDisplay() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-green-500 flex items-center justify-center text-white text-4xl">
-        Loading Timer...
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-4xl text-gray-900 font-bold">Loading Timer...</div>
       </div>
     }>
       <TimerDisplayContent />
