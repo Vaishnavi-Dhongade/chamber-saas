@@ -31,9 +31,8 @@ export default function Dashboard() {
     setLoading(true)
     try {
       const { data, error } = await supabase
-        .from('members')
-        .select('id, business_name, owner_name, category, phone, email')
-        .order('created_at', { ascending: false })
+      .from('members')
+      .select('id, business_name, owner_name, category, phone, email')
 
       if (error) {
         console.error('Error fetching members:', error)
