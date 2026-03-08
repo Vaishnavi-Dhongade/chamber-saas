@@ -128,7 +128,7 @@ export default function Home() {
             </Link>
             <Link 
               href="/timer/display"
-              className="border border-gray-300 text-gray-700 px-5 py-3 rounded-md hover:bg-gray-50 transition text-center text-sm font-medium"
+              className="bbg-gray-900 text-white px-5 py-3 rounded-md hover:bg-gray-800 transition text-center text-sm font-medium"
             >
               Timer Display
             </Link>
