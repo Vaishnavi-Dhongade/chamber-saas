@@ -34,12 +34,17 @@ export default function Dashboard() {
         .select('*')
         .order('created_at', { ascending: false })
 
-      if (error) throw error
+      if (error) {
+        console.error('Fetch error:', error)
+        throw error
+      }
       
+      console.log('✅ Fetched members:', data)
       setMembers(data || [])
     } catch (error: unknown) {
-      console.error('Error:', error)
-      alert('Error loading members')
+      console.error('❌ Error loading members:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      alert('Error loading members: ' + errorMessage)
     }
     setLoading(false)
   }
@@ -57,19 +62,33 @@ export default function Dashboard() {
     }
 
     try {
-      const { error } = await supabase
+      console.log('📤 Attempting to insert:', formData)
+      
+      const { data, error } = await supabase
         .from('members')
-        .insert([formData])
+        .insert([{
+          business_name: formData.business_name,
+          owner_name: formData.owner_name,
+          category: formData.category,
+          phone: formData.phone,
+          email: formData.email
+        }])
+        .select()
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ Insert error:', error)
+        throw error
+      }
 
+      console.log('✅ Insert successful:', data)
       alert('Member added successfully!')
       setFormData({ business_name: '', owner_name: '', category: '', phone: '', email: '' })
       setShowAddForm(false)
       fetchMembers()
     } catch (error: unknown) {
-      console.error('Error:', error)
-      alert('Error adding member')
+      console.error('❌ Error adding member:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      alert('Error adding member: ' + errorMessage)
     }
   }
 
@@ -88,39 +107,59 @@ export default function Dashboard() {
     if (!editingId) return
 
     try {
+      console.log('📤 Attempting to update:', editingId, formData)
+      
       const { error } = await supabase
         .from('members')
-        .update(formData)
+        .update({
+          business_name: formData.business_name,
+          owner_name: formData.owner_name,
+          category: formData.category,
+          phone: formData.phone,
+          email: formData.email
+        })
         .eq('id', editingId)
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ Update error:', error)
+        throw error
+      }
 
+      console.log('✅ Update successful')
       alert('Member updated successfully!')
       setEditingId(null)
       setFormData({ business_name: '', owner_name: '', category: '', phone: '', email: '' })
       fetchMembers()
     } catch (error: unknown) {
-      console.error('Error:', error)
-      alert('Error updating member')
+      console.error('❌ Error updating member:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      alert('Error updating member: ' + errorMessage)
     }
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure?')) return
+    if (!confirm('Are you sure you want to delete this member?')) return
 
     try {
+      console.log('📤 Attempting to delete:', id)
+      
       const { error } = await supabase
         .from('members')
         .delete()
         .eq('id', id)
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ Delete error:', error)
+        throw error
+      }
 
-      alert('Member deleted!')
+      console.log('✅ Delete successful')
+      alert('Member deleted successfully!')
       fetchMembers()
     } catch (error: unknown) {
-      console.error('Error:', error)
-      alert('Error deleting member')
+      console.error('❌ Error deleting member:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      alert('Error deleting member: ' + errorMessage)
     }
   }
 
@@ -133,7 +172,7 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-xl text-gray-600">Loading...</div>
+        <div className="text-xl text-gray-600">Loading members...</div>
       </div>
     )
   }
@@ -204,7 +243,8 @@ export default function Dashboard() {
                   type="text"
                   value={formData.business_name}
                   onChange={(e) => setFormData({...formData, business_name: e.target.value})}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  placeholder="Joe's Plumbing"
                 />
               </div>
               <div>
@@ -213,7 +253,8 @@ export default function Dashboard() {
                   type="text"
                   value={formData.owner_name}
                   onChange={(e) => setFormData({...formData, owner_name: e.target.value})}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  placeholder="Joe Smith"
                 />
               </div>
               <div>
@@ -222,7 +263,8 @@ export default function Dashboard() {
                   type="text"
                   value={formData.category}
                   onChange={(e) => setFormData({...formData, category: e.target.value})}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  placeholder="Home Services"
                 />
               </div>
               <div>
@@ -231,7 +273,8 @@ export default function Dashboard() {
                   type="text"
                   value={formData.phone}
                   onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  placeholder="(817) 555-1234"
                 />
               </div>
               <div className="md:col-span-2">
@@ -240,7 +283,8 @@ export default function Dashboard() {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  placeholder="joe@joesplumbing.com"
                 />
               </div>
             </div>
@@ -310,7 +354,10 @@ export default function Dashboard() {
           </table>
           {members.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-gray-500">No members yet</p>
+              <svg className="w-12 h-12 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <p className="text-sm text-gray-500">No members yet. Add your first member to get started.</p>
             </div>
           )}
         </div>
