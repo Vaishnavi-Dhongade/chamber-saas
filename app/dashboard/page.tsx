@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { supabase } from '@/lib/supabaseConfig'
 
 type Member = {
   id: string
@@ -12,35 +13,9 @@ type Member = {
   email: string
 }
 
-const INITIAL_MEMBERS: Member[] = [
-  {
-    id: '1',
-    business_name: "Joe's Plumbing",
-    owner_name: 'Joe Smith',
-    category: 'Home Services',
-    phone: '(817) 555-1234',
-    email: 'joe@joesplumbing.com'
-  },
-  {
-    id: '2',
-    business_name: 'Smith Law Firm',
-    owner_name: 'Jane Smith',
-    category: 'Legal Services',
-    phone: '(817) 555-5678',
-    email: 'jane@smithlaw.com'
-  },
-  {
-    id: '3',
-    business_name: 'Best Coffee Shop',
-    owner_name: 'Maria Garcia',
-    category: 'Food & Beverage',
-    phone: '(817) 555-9999',
-    email: 'maria@bestcoffee.com'
-  }
-]
-
 export default function Dashboard() {
-  const [members, setMembers] = useState<Member[]>(INITIAL_MEMBERS)
+  const [members, setMembers] = useState<Member[]>([])
+  const [loading, setLoading] = useState(true)
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
@@ -51,16 +26,73 @@ export default function Dashboard() {
     email: ''
   })
 
+  // Fetch members function - defined BEFORE useEffect
+  const fetchMembers = async () => {
+    setLoading(true)
+    try {
+      const { data, error } = await supabase
+        .from('members')
+        .select('id, business_name, owner_name, category, phone, email')
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching members:', error)
+        alert('Error loading members. Using demo data.')
+        // Fallback to demo data
+        setMembers([
+          {
+            id: '1',
+            business_name: "Joe's Plumbing",
+            owner_name: 'Joe Smith',
+            category: 'Home Services',
+            phone: '(817) 555-1234',
+            email: 'joe@joesplumbing.com'
+          }
+        ])
+      } else {
+        setMembers(data || [])
+      }
+    } catch (err) {
+      console.error('Fetch error:', err)
+      alert('Network error. Using demo data.')
+    }
+    setLoading(false)
+  }
+
+  // Fetch members on component mount
+  useEffect(() => {
+    fetchMembers()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const categories = [...new Set(members.map(m => m.category))]
 
-  const handleAdd = () => {
-    const newMember: Member = {
-      id: Date.now().toString(),
-      ...formData
+  const handleAdd = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('members')
+        .insert([{
+          business_name: formData.business_name,
+          owner_name: formData.owner_name,
+          category: formData.category,
+          phone: formData.phone,
+          email: formData.email
+        }])
+        .select()
+
+      if (error) {
+        console.error('Error adding member:', error)
+        alert('Error adding member: ' + error.message)
+      } else {
+        await fetchMembers() // Refresh list
+        setFormData({ business_name: '', owner_name: '', category: '', phone: '', email: '' })
+        setShowAddForm(false)
+        alert('Member added successfully!')
+      }
+    } catch (err) {
+      console.error('Add error:', err)
+      alert('Network error adding member')
     }
-    setMembers([...members, newMember])
-    setFormData({ business_name: '', owner_name: '', category: '', phone: '', email: '' })
-    setShowAddForm(false)
   }
 
   const handleEdit = (member: Member) => {
@@ -74,17 +106,55 @@ export default function Dashboard() {
     })
   }
 
-  const handleUpdate = () => {
-    setMembers(members.map(m => 
-      m.id === editingId ? { ...m, ...formData } : m
-    ))
-    setEditingId(null)
-    setFormData({ business_name: '', owner_name: '', category: '', phone: '', email: '' })
+  const handleUpdate = async () => {
+    if (!editingId) return
+
+    try {
+      const { error } = await supabase
+        .from('members')
+        .update({
+          business_name: formData.business_name,
+          owner_name: formData.owner_name,
+          category: formData.category,
+          phone: formData.phone,
+          email: formData.email
+        })
+        .eq('id', editingId)
+
+      if (error) {
+        console.error('Error updating member:', error)
+        alert('Error updating member: ' + error.message)
+      } else {
+        await fetchMembers() // Refresh list
+        setEditingId(null)
+        setFormData({ business_name: '', owner_name: '', category: '', phone: '', email: '' })
+        alert('Member updated successfully!')
+      }
+    } catch (err) {
+      console.error('Update error:', err)
+      alert('Network error updating member')
+    }
   }
 
-  const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this member?')) {
-      setMembers(members.filter(m => m.id !== id))
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this member?')) return
+
+    try {
+      const { error } = await supabase
+        .from('members')
+        .delete()
+        .eq('id', id)
+
+      if (error) {
+        console.error('Error deleting member:', error)
+        alert('Error deleting member: ' + error.message)
+      } else {
+        await fetchMembers() // Refresh list
+        alert('Member deleted successfully!')
+      }
+    } catch (err) {
+      console.error('Delete error:', err)
+      alert('Network error deleting member')
     }
   }
 
@@ -92,6 +162,14 @@ export default function Dashboard() {
     setEditingId(null)
     setShowAddForm(false)
     setFormData({ business_name: '', owner_name: '', category: '', phone: '', email: '' })
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-xl text-gray-600">Loading members...</div>
+      </div>
+    )
   }
 
   return (
