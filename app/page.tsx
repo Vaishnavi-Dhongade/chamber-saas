@@ -14,7 +14,7 @@ export default function Home() {
               <p className="text-sm text-gray-500">Platform for Chambers of Commerce</p>
             </div>
             <Link 
-              href="/dashboard"
+              href="/dashboard/"
               className="bg-gray-900 text-white px-5 py-2.5 rounded-md hover:bg-gray-800 transition font-medium text-sm"
             >
               Admin Panel
@@ -49,7 +49,7 @@ export default function Home() {
               Searchable directory of all chamber members with contact information and business details
             </p>
             <Link 
-              href="/members"
+              href="/members/"
               className="text-sm text-gray-900 hover:text-gray-700 font-medium inline-flex items-center"
             >
               Browse Members
@@ -71,7 +71,7 @@ export default function Home() {
               Manage networking events, mixers, and meetings with our events management system
             </p>
             <Link 
-              href="/dashboard/events"
+              href="/dashboard/events/"
               className="text-sm text-gray-900 hover:text-gray-700 font-medium inline-flex items-center"
             >
               View Events
@@ -93,7 +93,7 @@ export default function Home() {
               Professional timer for networking pitches. Control from phone, display on projector
             </p>
             <Link 
-              href="/dashboard/timer"
+              href="/dashboard/timer/"
               className="text-sm text-gray-900 hover:text-gray-700 font-medium inline-flex items-center"
             >
               Open Timer
@@ -109,40 +109,32 @@ export default function Home() {
           <h3 className="text-lg font-bold text-gray-900 mb-6">Admin Dashboard</h3>
           <div className="grid md:grid-cols-4 gap-4">
             <Link 
-              href="/dashboard"
+              href="/dashboard/"
               className="bg-gray-900 text-white px-5 py-3 rounded-md hover:bg-gray-800 transition text-center text-sm font-medium"
             >
               Members
             </Link>
 
             <Link 
-              href="/dashboard/events"
+              href="/dashboard/events/"
               className="bg-gray-700 text-white px-5 py-3 rounded-md hover:bg-gray-600 transition text-center text-sm font-medium"
             >
               Events
             </Link>
 
             <Link 
-              href="/dashboard/timer"
+              href="/dashboard/timer/"
               className="bg-gray-700 text-white px-5 py-3 rounded-md hover:bg-gray-600 transition text-center text-sm font-medium"
             >
               Timer Control
             </Link>
 
-            {/* <Link 
-              href="/timer/display"
-              className="bbg-gray-900 text-white px-5 py-3 rounded-md hover:bg-gray-800 transition text-center text-sm font-medium"
-            >
-              Timer Display
-            </Link> */}
-
             <Link 
-              href="/timer/display"
+              href="/timer/display/"
               className="bg-gray-900 text-white px-5 py-3 rounded-md hover:bg-gray-800 transition text-center text-sm font-medium"
             >
               Timer Display
             </Link>
-
           </div>
         </div>
       </div>

@@ -5,96 +5,155 @@ import { useSearchParams } from 'next/navigation'
 
 function TimerDisplayContent() {
   const searchParams = useSearchParams()
-  const durationFromUrl = parseInt(searchParams.get('duration') || '45')
+  const durationParam = searchParams.get('duration')
+  const initialDuration = durationParam ? parseInt(durationParam) : 45
   
-  const [duration] = useState(durationFromUrl)
-  const [timeLeft, setTimeLeft] = useState(durationFromUrl)
+  const [timeLeft, setTimeLeft] = useState(initialDuration)
+  const [isPaused, setIsPaused] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
+  const [autoRestart, setAutoRestart] = useState(true) // NEW: Auto-restart enabled by default
+  const [pitchCount, setPitchCount] = useState(0) // NEW: Track number of pitches completed
 
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null
+    if (!isRunning || isPaused) return
 
-    if (isRunning && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 1) {
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          // Timer reached 0
+          if (autoRestart) {
+            // Auto-restart: Reset to initial duration
+            setPitchCount(count => count + 1) // Increment pitch counter
+            return initialDuration
+          } else {
+            // Stop if auto-restart is disabled
             setIsRunning(false)
             return 0
           }
-          return prev - 1
-        })
-      }, 1000)
-    }
+        }
+        return prev - 1
+      })
+    }, 1000)
 
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [isRunning, timeLeft])
+    return () => clearInterval(interval)
+  }, [isRunning, isPaused, autoRestart, initialDuration])
+
+  const handleStart = () => {
+    setIsRunning(true)
+    setIsPaused(false)
+  }
+
+  const handlePause = () => {
+    setIsPaused(!isPaused)
+  }
+
+  const handleReset = () => {
+    setTimeLeft(initialDuration)
+    setIsRunning(false)
+    setIsPaused(false)
+    setPitchCount(0)
+  }
+
+  const toggleAutoRestart = () => {
+    setAutoRestart(!autoRestart)
+  }
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
 
   const getBackgroundColor = () => {
-    const percentage = (timeLeft / duration) * 100
-    if (percentage > 50) return 'bg-gray-100'
-    if (percentage > 20) return 'bg-gray-200'
-    return 'bg-gray-300'
+    if (timeLeft <= 5) return 'bg-red-600'
+    if (timeLeft <= 10) return 'bg-yellow-500'
+    return 'bg-gray-900'
   }
 
   const getTextColor = () => {
-    const percentage = (timeLeft / duration) * 100
-    if (percentage > 50) return 'text-gray-900'
-    if (percentage > 20) return 'text-gray-800'
-    return 'text-gray-900'
-  }
-
-  const getStatusText = () => {
-    if (timeLeft === 0) return "TIME'S UP!"
-    if (isRunning) return 'SPEAKING'
-    return 'READY'
+    if (timeLeft <= 5) return 'text-white'
+    if (timeLeft <= 10) return 'text-gray-900'
+    return 'text-white'
   }
 
   return (
-    <div className={`min-h-screen flex flex-col items-center justify-center transition-colors duration-500 ${getBackgroundColor()}`}>
-      <div className="text-center">
-        <div className={`text-9xl md:text-[20rem] font-black mb-8 drop-shadow-lg transition-colors ${getTextColor()}`}>
-          {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
-        </div>
-        
-        <div className={`text-4xl md:text-6xl font-bold uppercase tracking-widest ${getTextColor()}`}>
-          {getStatusText()}
-        </div>
+    <div className={`min-h-screen ${getBackgroundColor()} transition-colors duration-500 flex flex-col items-center justify-center p-8`}>
+      {/* Auto-Restart Indicator */}
+      <div className="absolute top-8 right-8 flex items-center gap-3 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
+        <span className={`text-sm font-medium ${getTextColor()}`}>
+          Auto-Restart: {autoRestart ? 'ON' : 'OFF'}
+        </span>
+        <button
+          onClick={toggleAutoRestart}
+          className={`relative w-12 h-6 rounded-full transition-colors ${
+            autoRestart ? 'bg-green-500' : 'bg-gray-400'
+          }`}
+        >
+          <div
+            className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+              autoRestart ? 'translate-x-6' : 'translate-x-0.5'
+            }`}
+          />
+        </button>
       </div>
 
-      {/* Test Controls */}
-      <div className="fixed bottom-8 left-8 bg-white border-2 border-gray-300 rounded-lg p-4 shadow-lg max-w-md">
-        <p className="font-bold text-gray-900 mb-2 text-sm">Test Controls</p>
-        <p className="text-xs text-gray-600 mb-3">Duration: {duration} seconds</p>
-        <div className="space-x-2">
-          <button
-            onClick={() => {
-              setTimeLeft(duration)
-              setIsRunning(true)
-            }}
-            className="bg-gray-900 text-white px-4 py-2 rounded-md hover:bg-gray-800 transition text-sm font-medium"
-          >
-            ▶ Start
-          </button>
-          <button
-            onClick={() => setIsRunning(false)}
-            className="bg-gray-700 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition text-sm font-medium"
-          >
-            ⏸ Pause
-          </button>
-          <button
-            onClick={() => {
-              setIsRunning(false)
-              setTimeLeft(duration)
-            }}
-            className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition text-sm font-medium"
-          >
-            🔄 Reset
-          </button>
+      {/* Pitch Counter */}
+      {autoRestart && pitchCount > 0 && (
+        <div className="absolute top-8 left-8 bg-white/10 backdrop-blur-sm px-6 py-3 rounded-lg">
+          <div className={`text-sm font-medium ${getTextColor()} mb-1`}>Pitches Completed</div>
+          <div className={`text-4xl font-bold ${getTextColor()} text-center`}>{pitchCount}</div>
         </div>
-        <p className="text-xs text-gray-500 mt-3">
-          Note: In production, this syncs with control screen automatically
+      )}
+
+      {/* Main Timer Display */}
+      <div className="text-center">
+        <div className={`text-[20rem] font-bold ${getTextColor()} leading-none mb-8 tabular-nums`}>
+          {formatTime(timeLeft)}
+        </div>
+
+        <div className={`text-4xl font-medium ${getTextColor()} mb-2`}>
+          {isPaused ? 'PAUSED' : isRunning ? 'RUNNING' : 'READY'}
+        </div>
+
+        {autoRestart && isRunning && (
+          <div className={`text-xl ${getTextColor()} opacity-75`}>
+            Auto-restarts after each pitch
+          </div>
+        )}
+      </div>
+
+      {/* Control Buttons */}
+      <div className="absolute bottom-12 flex gap-4">
+        {!isRunning && (
+          <button
+            onClick={handleStart}
+            className="bg-white text-gray-900 px-8 py-4 rounded-lg text-xl font-semibold hover:bg-gray-100 transition"
+          >
+            START
+          </button>
+        )}
+        
+        {isRunning && (
+          <button
+            onClick={handlePause}
+            className="bg-white text-gray-900 px-8 py-4 rounded-lg text-xl font-semibold hover:bg-gray-100 transition"
+          >
+            {isPaused ? 'RESUME' : 'PAUSE'}
+          </button>
+        )}
+        
+        <button
+          onClick={handleReset}
+          className="bg-white/20 backdrop-blur-sm text-white px-8 py-4 rounded-lg text-xl font-semibold hover:bg-white/30 transition"
+        >
+          RESET
+        </button>
+      </div>
+
+      {/* Instructions */}
+      <div className="absolute bottom-2 text-center">
+        <p className={`text-sm ${getTextColor()} opacity-50`}>
+          Press F11 for fullscreen • ESC to exit
         </p>
       </div>
     </div>
@@ -104,8 +163,8 @@ function TimerDisplayContent() {
 export default function TimerDisplay() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-4xl text-gray-900 font-bold">Loading Timer...</div>
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-white text-2xl">Loading timer...</div>
       </div>
     }>
       <TimerDisplayContent />
